@@ -40,6 +40,10 @@ interface EposApi {
     @FormUrlEncoded @POST("getTables.php")
     suspend fun getTables(@Field("room_no") room: String): ServerResponse
 
+    /** Same as getTables.php plus covers, amount, minutes since last KOT, floor position and lock. */
+    @FormUrlEncoded @POST("getTablesPlan.php")
+    suspend fun getTablesPlan(@Field("room_no") room: String): ServerResponse
+
     @FormUrlEncoded @POST("getKOT.php")
     suspend fun getKot(@Field("room_no") room: String, @Field("table_no") table: String): ServerResponse
 

@@ -234,7 +234,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         tablesJob?.cancel()
         tablesJob = viewModelScope.launch {
             try {
-                val res = api.getTables(room.id)
+                // Detailed list first; an older ePOS Mobile Server answers 404, then use the plain list.
+                val res = try {
+                    api.getTablesPlan(room.id).takeIf { it.ok } ?: api.getTables(room.id)
+                } catch (e: retrofit2.HttpException) {
+                    api.getTables(room.id)
+                }
                 if (currentRoom?.id != room.id) return@launch
                 if (res.ok) tables = res.tableList.orEmpty().distinctBy { it.number } else if (!quiet) say(res.text)
             } catch (e: kotlinx.coroutines.CancellationException) {

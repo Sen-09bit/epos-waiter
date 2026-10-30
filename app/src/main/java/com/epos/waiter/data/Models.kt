@@ -116,6 +116,13 @@ data class TableInfo(
     @SerializedName("Table_No") val tableNo: String? = null,
     @SerializedName("Display_TableNo") val displayTableNo: String? = null,
     @SerializedName("Color_Status") val colorStatus: String? = null,
+    // Extra details from getTablesPlan.php (missing with an older server):
+    @SerializedName("X_POS") val xPos: Double? = null,
+    @SerializedName("Y_POS") val yPos: Double? = null,
+    @SerializedName("Covers") val covers: Double? = null,
+    @SerializedName("Amount") val amount: Double? = null,
+    @SerializedName("Minutes") val minutes: Double? = null,
+    @SerializedName("LockedBy") val lockedBy: String? = null,
 ) {
     /** The number staff see and the key used everywhere (e.g. "5" or split table "5-1"). */
     val number: String get() = displayTableNo?.trim()?.takeIf { it.isNotEmpty() } ?: tableNo?.trim().orEmpty()
