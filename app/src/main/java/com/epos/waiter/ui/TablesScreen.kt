@@ -32,13 +32,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -57,6 +65,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -77,6 +86,9 @@ import com.epos.waiter.Screen
 import com.epos.waiter.data.TableInfo
 import com.epos.waiter.data.TableStatus
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -248,9 +260,8 @@ private fun RunningPanel(tables: List<TableInfo>, enabled: Boolean, onOpen: (Tab
 
 @Composable
 fun TablesScreen(vm: AppViewModel) {
-    var menuOpen by remember { mutableStateOf(false) }
-    var showChange by remember { mutableStateOf(false) }
-    var showJoin by remember { mutableStateOf(false) }
+    val drawer = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
     var gridOnTablet by rememberSaveable { mutableStateOf(false) }
     val wide = isWide()
     val tables = vm.tables
@@ -268,6 +279,10 @@ fun TablesScreen(vm: AppViewModel) {
         }
     }
 
+    ModalNavigationDrawer(
+        drawerState = drawer,
+        drawerContent = { MenuDrawer(vm) { scope.launch { drawer.close() } } },
+    ) {
     Column(Modifier.fillMaxSize().background(Color(0xFFF4F5F8))) {
         TopAppBar(
             title = {
@@ -275,6 +290,9 @@ fun TablesScreen(vm: AppViewModel) {
                     Text(vm.currentRoom?.label ?: "Tables", maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(vm.user?.name.orEmpty(), style = MaterialTheme.typography.labelMedium)
                 }
+            },
+            navigationIcon = {
+                IconButton(onClick = { scope.launch { drawer.open() } }) { Icon(Icons.Filled.Menu, contentDescription = "Menu") }
             },
             actions = {
                 if (wide && hasPlan) {
@@ -284,21 +302,6 @@ fun TablesScreen(vm: AppViewModel) {
                     ) { Text(if (gridOnTablet) "Floor plan" else "Grid view", color = Color.White) }
                 }
                 IconButton(onClick = { vm.refreshTables() }) { Icon(Icons.Filled.Refresh, contentDescription = "Refresh") }
-                Box {
-                    IconButton(onClick = { menuOpen = true }) { Icon(Icons.Filled.MoreVert, contentDescription = "Menu") }
-                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                        DropdownMenuItem(text = { Text("Change table") }, onClick = { menuOpen = false; showChange = true })
-                        DropdownMenuItem(text = { Text("Join tables") }, onClick = { menuOpen = false; showJoin = true })
-                        HorizontalDivider()
-                        DropdownMenuItem(text = { Text("Expenses") }, onClick = { menuOpen = false; vm.go(Screen.Expenses) })
-                        DropdownMenuItem(text = { Text("Restaurant profile") }, onClick = { menuOpen = false; vm.go(Screen.Profile) })
-                        DropdownMenuItem(text = { Text("Change password") }, onClick = { menuOpen = false; vm.go(Screen.Password) })
-                        HorizontalDivider()
-                        DropdownMenuItem(text = { Text("Reload menu & prices") }, onClick = { menuOpen = false; vm.reloadMenu() })
-                        DropdownMenuItem(text = { Text("Change ePOS computer") }, onClick = { menuOpen = false; vm.forgetServer() })
-                        DropdownMenuItem(text = { Text("Logout") }, onClick = { menuOpen = false; vm.logout() })
-                    }
-                }
             },
             colors = brandBar(), windowInsets = NoInsets,
         )
@@ -344,6 +347,8 @@ fun TablesScreen(vm: AppViewModel) {
         }
     }
 
+    }
+
     vm.coversRequest?.let { req -> CoversDialog(req.table.number, vm) }
     vm.tableBusy?.let { busy ->
         AlertDialog(
@@ -353,8 +358,6 @@ fun TablesScreen(vm: AppViewModel) {
             text = { Column { busy.lines.forEach { Text(it) } } },
         )
     }
-    if (showChange) ChangeTableDialog(vm) { showChange = false }
-    if (showJoin) JoinTablesDialog(vm) { showJoin = false }
 }
 
 /** Old app: "Enter Number of Cover" + "Customer Type: Regular / New". */
@@ -398,86 +401,70 @@ private fun CoversDialog(table: String, vm: AppViewModel) {
     )
 }
 
-/** Move an open order (blue table) to a free table (green). */
-@Composable
-private fun ChangeTableDialog(vm: AppViewModel, close: () -> Unit) {
-    LaunchedEffect(Unit) { vm.loadChangeTableChoices() }
-    var source by remember { mutableStateOf<String?>(null) }
-    var target by remember { mutableStateOf<String?>(null) }
-    val from = vm.tableChoices.filter { it.status == TableStatus.Ordered }
-    val to = vm.tableChoices.filter { it.status == TableStatus.Free }
-    AlertDialog(
-        onDismissRequest = close,
-        title = { Text("Change table") },
-        text = {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                TablePickList("From (ordered)", from, source, Modifier.weight(1f)) { source = it }
-                TablePickList("To (free)", to, target, Modifier.weight(1f)) { target = it }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                enabled = source != null && target != null && !vm.busy,
-                onClick = { vm.changeTable(source!!, target!!, close) },
-            ) { Text("Change") }
-        },
-        dismissButton = { TextButton(onClick = close) { Text("Close") } },
-    )
-}
+// ------------------------------------------------------------------ slide-out menu (template "Menu")
 
 @Composable
-private fun TablePickList(title: String, list: List<TableInfo>, selected: String?, modifier: Modifier, pick: (String) -> Unit) {
-    Column(modifier) {
-        Text(title, style = MaterialTheme.typography.titleSmall)
-        if (list.isEmpty()) Text("None", style = MaterialTheme.typography.bodySmall)
-        LazyColumn(Modifier.heightIn(max = 300.dp)) {
-            items(list, key = { it.number }) { t ->
-                Row(Modifier.fillMaxWidth().clickable { pick(t.number) }, verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = selected == t.number, onClick = { pick(t.number) })
-                    Text("Table ${t.number}")
-                }
-            }
-        }
+private fun DrawerItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String, highlight: Boolean = false,
+                       color: Color = Navy, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().height(52.dp).clip(RoundedCornerShape(14.dp))
+            .background(if (highlight) Color(0xFFFDF7EC) else Color.Transparent)
+            .clickable(onClick = onClick).padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(22.dp))
+        Text(text, fontSize = 15.sp, fontWeight = if (color == Navy) FontWeight.SemiBold else FontWeight.Bold, color = color)
     }
 }
 
-/** Join free tables to one table (same as the old app's Join Table). */
 @Composable
-private fun JoinTablesDialog(vm: AppViewModel, close: () -> Unit) {
-    LaunchedEffect(Unit) { vm.loadJoinTableChoices() }
-    var source by remember { mutableStateOf<String?>(null) }
-    val others = remember { mutableStateListOf<String>() }
-    AlertDialog(
-        onDismissRequest = close,
-        title = { Text("Join tables") },
-        text = {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                TablePickList("Main table", vm.tableChoices, source, Modifier.weight(1f)) {
-                    source = it; others.remove(it)
-                }
-                Column(Modifier.weight(1f)) {
-                    Text("Join with", style = MaterialTheme.typography.titleSmall)
-                    LazyColumn(Modifier.heightIn(max = 300.dp)) {
-                        items(vm.tableChoices.filter { it.number != source }, key = { it.number }) { t ->
-                            val checked = t.number in others
-                            Row(
-                                Modifier.fillMaxWidth().clickable { if (checked) others.remove(t.number) else others.add(t.number) },
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Checkbox(checked = checked, onCheckedChange = { if (it) others.add(t.number) else others.remove(t.number) })
-                                Text("Table ${t.number}")
-                            }
-                        }
+private fun DrawerLabel(text: String, color: Color = Color(0xFF5B6478), lock: Boolean = false) {
+    Row(Modifier.padding(start = 12.dp, top = 10.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        if (lock) Icon(Icons.Filled.Lock, contentDescription = null, tint = color, modifier = Modifier.size(12.dp))
+        Text(text, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp, color = color)
+    }
+}
+
+@Composable
+private fun MenuDrawer(vm: AppViewModel, close: () -> Unit) {
+    val u = vm.user
+    fun run(action: () -> Unit) { close(); action() }
+    Column(Modifier.fillMaxHeight().width(318.dp).background(Color.White)) {
+        Column(Modifier.fillMaxWidth().background(Navy).padding(start = 20.dp, end = 20.dp, top = 22.dp, bottom = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Avatar(u?.image, u?.name.orEmpty(), size = 52.dp)
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(u?.name.orEmpty(), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                    Box(Modifier.clip(RoundedCornerShape(11.dp)).background(Color(0xFF26355A)).padding(horizontal = 10.dp, vertical = 3.dp)) {
+                        Text(if (vm.isAdmin) "ADMIN" else "WAITER", color = Color(0xFFFFD58A), fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold, letterSpacing = 0.5.sp)
                     }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(
-                enabled = source != null && others.isNotEmpty() && !vm.busy,
-                onClick = { vm.joinTables(source!!, others.toList(), close) },
-            ) { Text("Join") }
-        },
-        dismissButton = { TextButton(onClick = close) { Text("Close") } },
-    )
+            Text("${vm.currentRoom?.label.orEmpty()} · ePOS computer ${vm.serverAddress}", color = Color(0xFFC9D1E3), fontSize = 13.sp,
+                maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            DrawerLabel("TABLES")
+            DrawerItem(Icons.AutoMirrored.Filled.ArrowForward, "Change table") { run { vm.go(Screen.ChangeTable) } }
+            DrawerItem(Icons.Filled.Add, "Join tables") { run { vm.go(Screen.JoinTables) } }
+            if (vm.isAdmin) {
+                HorizontalDivider(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), color = Color(0xFFEEF0F5))
+                DrawerLabel("ADMIN ONLY", Color(0xFFB45309), lock = true)
+                DrawerItem(Icons.Filled.ShoppingCart, "Expenses", highlight = true) { run { vm.go(Screen.Expenses) } }
+                DrawerItem(Icons.Filled.Home, "Restaurant profile", highlight = true) { run { vm.go(Screen.Profile) } }
+            }
+            HorizontalDivider(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), color = Color(0xFFEEF0F5))
+            DrawerItem(Icons.Filled.Lock, "Change password") { run { vm.go(Screen.Password) } }
+            DrawerItem(Icons.Filled.Refresh, "Reload menu & prices") { run { vm.reloadMenu() } }
+            DrawerItem(Icons.Filled.Settings, "Change ePOS computer") { run { vm.forgetServer() } }
+        }
+        HorizontalDivider(color = Color(0xFFEEF0F5))
+        Box(Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 18.dp)) {
+            DrawerItem(Icons.AutoMirrored.Filled.ExitToApp, "Logout", color = Color(0xFFB3302A)) { run { vm.logout() } }
+        }
+    }
 }

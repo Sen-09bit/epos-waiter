@@ -32,7 +32,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-enum class Screen { Connect, Login, Tables, Order, Expenses, Profile, Password }
+enum class Screen { Connect, Login, Tables, Order, Expenses, Profile, Password, ChangeTable, JoinTables }
 
 /** Asked before opening a free table (old app: number of covers + customer type). */
 data class CoversRequest(val table: TableInfo)
@@ -191,6 +191,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // ---------------------------------------------------------------- login
     var user by mutableStateOf<User?>(null)
         private set
+
+    /** Users.Category = 1: may see Expenses and edit the restaurant profile. */
+    val isAdmin: Boolean get() = (user?.category ?: 0.0).toInt() == 1
 
     fun login(u: User, password: String) {
         // Same check as the old app: the password is compared on the phone.
@@ -445,7 +448,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val res = api.changeTable(user?.name.orEmpty(), room.id, source, destination)
         say(res.text.ifBlank { if (res.ok) "Table changed" else "Could not change table" })
         if (res.ok) {
-            done(); refreshTables(quiet = true)
+            done(); go(Screen.Tables)
         }
     }
 
@@ -454,7 +457,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val res = api.joinTables(room.id, source, others.joinToString(","))
         say(res.text.ifBlank { if (res.ok) "Tables joined" else "Could not join tables" })
         if (res.ok) {
-            done(); refreshTables(quiet = true)
+            done(); go(Screen.Tables)
         }
     }
 
@@ -463,11 +466,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         private set
 
     fun go(s: Screen) {
+        if ((s == Screen.Expenses || s == Screen.Profile) && !isAdmin) {
+            say("Only admin users can open this."); return
+        }
         screen = s
         when (s) {
             Screen.Expenses -> loadExpenses()
             Screen.Profile -> loadProfile()
             Screen.Tables -> refreshTables(quiet = true)
+            Screen.ChangeTable -> loadChangeTableChoices()
+            Screen.JoinTables -> loadJoinTableChoices()
             else -> Unit
         }
     }
@@ -478,6 +486,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun addExpense(description: String, amount: String, done: () -> Unit) {
+        if (!isAdmin) {
+            say("Only admin users can add expenses."); return
+        }
         if (description.isBlank()) {
             say("Enter a description"); return
         }
@@ -500,6 +511,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun saveProfile(c: Concern) = call {
+        if (!isAdmin) {
+            say("Only admin users can change the restaurant profile."); return@call
+        }
         val res = api.updateProfile(
             conCode = (c.conCode ?: 1.0).toInt().toString(), name = c.concernName.orEmpty(), subTitle = c.subTitle.orEmpty(),
             add1 = c.add1.orEmpty(), add2 = c.add2.orEmpty(), city = c.city.orEmpty(), zip = c.zipCode.orEmpty(),
@@ -539,7 +553,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             Screen.Login -> return false
             Screen.Tables -> return false
             Screen.Order -> Unit // the order screen asks before leaving
-            Screen.Expenses, Screen.Profile, Screen.Password -> screen = Screen.Tables
+            Screen.Expenses, Screen.Profile, Screen.Password, Screen.ChangeTable, Screen.JoinTables -> screen = Screen.Tables
         }
         return true
     }

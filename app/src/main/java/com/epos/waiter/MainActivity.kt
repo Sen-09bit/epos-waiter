@@ -21,7 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import com.epos.waiter.ui.ChangeTableScreen
 import com.epos.waiter.ui.ConnectScreen
+import com.epos.waiter.ui.JoinTablesScreen
 import com.epos.waiter.ui.EposTheme
 import com.epos.waiter.ui.ExpensesScreen
 import com.epos.waiter.ui.LoginScreen
@@ -50,7 +52,7 @@ class MainActivity : ComponentActivity() {
                     vm.messages.collect { snackbar.showSnackbar(it) }
                 }
                 // The order screen has its own back handling (asks before discarding changes).
-                BackHandler(enabled = vm.screen == Screen.Expenses || vm.screen == Screen.Profile || vm.screen == Screen.Password) {
+                BackHandler(enabled = vm.screen in setOf(Screen.Expenses, Screen.Profile, Screen.Password, Screen.ChangeTable, Screen.JoinTables)) {
                     vm.back()
                 }
                 Scaffold(snackbarHost = { SnackbarHost(snackbar) }) { inner ->
@@ -63,6 +65,8 @@ class MainActivity : ComponentActivity() {
                             Screen.Expenses -> ExpensesScreen(vm)
                             Screen.Profile -> ProfileScreen(vm)
                             Screen.Password -> PasswordScreen(vm)
+                            Screen.ChangeTable -> ChangeTableScreen(vm)
+                            Screen.JoinTables -> JoinTablesScreen(vm)
                         }
                         if (vm.busy) {
                             LinearProgressIndicator(Modifier.fillMaxWidth().align(Alignment.TopCenter))
