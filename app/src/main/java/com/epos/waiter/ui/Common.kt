@@ -26,21 +26,24 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-val Brand = Color(0xFF0B6E99)
+/** ePOS brand colours (Ticket Fork logo). */
+val Navy = Color(0xFF14213D)
+val Saffron = Color(0xFFF59E0B)
+val Brand = Navy
 val FreeGreen = Color(0xFF2E9D50)
 val OrderedBlue = Color(0xFF1E63C6)
 val BilledRed = Color(0xFFC7372F)
 val SentGrey = Color(0xFF6B7280)
 
 private val colors: ColorScheme = lightColorScheme(
-    primary = Brand,
+    primary = Navy,
     onPrimary = Color.White,
-    secondary = Color(0xFFE07A1F),
-    onSecondary = Color.White,
-    primaryContainer = Color(0xFFD5EEF8),
-    onPrimaryContainer = Color(0xFF033A52),
-    secondaryContainer = Color(0xFFFCE6D2),
-    onSecondaryContainer = Color(0xFF5A2E06),
+    secondary = Saffron,
+    onSecondary = Navy,
+    primaryContainer = Color(0xFFDDE3F0),
+    onPrimaryContainer = Navy,
+    secondaryContainer = Color(0xFFFDEBC8),
+    onSecondaryContainer = Color(0xFF4A2F00),
     background = Color(0xFFF6F7F9),
     surface = Color.White,
 )

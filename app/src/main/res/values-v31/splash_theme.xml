@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: same as values/, plus the ePOS wordmark at the bottom -->
+    <style name="Theme.ePOS.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/epos_navy</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <item name="android:windowSplashScreenBrandingImage">@drawable/splash_branding</item>
+        <!-- CHANGE to your app's existing theme name: -->
+        <item name="postSplashScreenTheme">@style/Theme.EposWaiter</item>
+    </style>
+</resources>

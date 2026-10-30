@@ -3,6 +3,7 @@
 package com.epos.waiter.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -54,9 +56,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.epos.waiter.AppViewModel
+import com.epos.waiter.R
 import com.epos.waiter.data.User
 
 val NoInsets = WindowInsets(0, 0, 0, 0)
+
+/** The ePOS logo (navy ticket-fork + wordmark) for light backgrounds. */
+@Composable
+fun EposLogo(height: androidx.compose.ui.unit.Dp = 48.dp) {
+    Image(
+        painter = painterResource(R.drawable.epos_logo_horizontal),
+        contentDescription = "ePOS",
+        modifier = Modifier.height(height),
+    )
+}
 
 @Composable
 fun brandBar() = TopAppBarDefaults.topAppBarColors(
@@ -77,6 +90,7 @@ fun ConnectScreen(vm: AppViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(Modifier.widthIn(max = 520.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                EposLogo()
                 Text("Connect to the ePOS computer", style = MaterialTheme.typography.headlineSmall)
                 Text("The phone must be on the restaurant Wi-Fi and ePOS Mobile Server must be running on the computer.",
                     style = MaterialTheme.typography.bodyMedium)
@@ -138,7 +152,10 @@ fun LoginScreen(vm: AppViewModel) {
             },
             colors = brandBar(), windowInsets = NoInsets,
         )
-        Text("Who are you?", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp))
+        Row(Modifier.fillMaxWidth().padding(16.dp, 16.dp, 16.dp, 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("Who are you?", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            EposLogo(height = 32.dp)
+        }
         LazyVerticalGrid(
             columns = GridCells.Adaptive(112.dp),
             modifier = Modifier.weight(1f).padding(horizontal = 12.dp),

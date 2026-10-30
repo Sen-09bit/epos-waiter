@@ -1,11 +1,13 @@
 package com.epos.waiter
 
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -33,6 +35,12 @@ class MainActivity : ComponentActivity() {
     private val vm: AppViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // ePOS splash (navy, ticket-fork). Stays up while the app looks for the ePOS computer, at most 5 s.
+        val splashStart = SystemClock.uptimeMillis()
+        installSplashScreen().setKeepOnScreenCondition {
+            vm.screen == Screen.Connect && (vm.busy || vm.scanning) &&
+                SystemClock.uptimeMillis() - splashStart < 5_000
+        }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {

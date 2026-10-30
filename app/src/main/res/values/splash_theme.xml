@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Starting theme. Set this on the launcher activity in AndroidManifest.xml. -->
+    <style name="Theme.ePOS.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/epos_navy</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <!-- CHANGE to your app's existing theme name: -->
+        <item name="postSplashScreenTheme">@style/Theme.EposWaiter</item>
+    </style>
+</resources>
