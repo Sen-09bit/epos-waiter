@@ -1,4 +1,4 @@
-# ePOS Waiter (new Android app)
+# ePOS T2K (new Android app)
 
 A new Android app for waiters. It works the same way as the old ePOS app and talks to **ePOS Mobile Server** on the main ePOS computer. The server, database and printers stay exactly as they are; only the phone app is new.
 
@@ -46,7 +46,7 @@ For a final version to give to all phones: **Build → Generate Signed App Bundl
 
 1. Copy `app-debug.apk` to the phone (WhatsApp to yourself, USB or Google Drive).
 2. Open it and allow "Install unknown apps" when Android asks.
-3. Open **ePOS Waiter**. It searches the Wi-Fi and connects to the ePOS computer.
+3. Open **ePOS T2K**. It searches the Wi-Fi and connects to the ePOS computer.
 
 ## Server update needed
 

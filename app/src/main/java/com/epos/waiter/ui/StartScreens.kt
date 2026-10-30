@@ -84,7 +84,7 @@ fun brandBar() = TopAppBarDefaults.topAppBarColors(
 fun ConnectScreen(vm: AppViewModel) {
     var address by remember { mutableStateOf(vm.serverAddress) }
     Column(Modifier.fillMaxSize()) {
-        TopAppBar(title = { Text("ePOS Waiter") }, colors = brandBar(), windowInsets = NoInsets)
+        TopAppBar(title = { Text("ePOS T2K") }, colors = brandBar(), windowInsets = NoInsets)
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -142,7 +142,7 @@ fun ConnectScreen(vm: AppViewModel) {
 fun LoginScreen(vm: AppViewModel) {
     var selected by remember { mutableStateOf<User?>(vm.users.firstOrNull { it.id == vm.lastUserId }) }
     var password by remember { mutableStateOf("") }
-    val title = vm.concern?.concernName?.trim().orEmpty().ifEmpty { "ePOS Waiter" }
+    val title = vm.concern?.concernName?.trim().orEmpty().ifEmpty { "ePOS T2K" }
 
     Column(Modifier.fillMaxSize()) {
         TopAppBar(

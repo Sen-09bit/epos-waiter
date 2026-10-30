@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "ePOS Waiter"
+rootProject.name = "ePOS T2K"
 include(":app")
