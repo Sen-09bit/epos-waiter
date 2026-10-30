@@ -1,5 +1,7 @@
 package com.epos.waiter.ui
 
+import com.epos.waiter.R
+
 import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.compose.foundation.Image
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -21,6 +24,11 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -48,9 +56,32 @@ private val colors: ColorScheme = lightColorScheme(
     surface = Color.White,
 )
 
+/** Plus Jakarta Sans (bundled, works offline). One variable font file covers every weight. */
+@OptIn(ExperimentalTextApi::class)
+private fun jakarta(weight: FontWeight) = Font(
+    R.font.plus_jakarta_sans, weight,
+    variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight)),
+)
+
+val Jakarta = FontFamily(
+    jakarta(FontWeight.Normal), jakarta(FontWeight.Medium), jakarta(FontWeight.SemiBold),
+    jakarta(FontWeight.Bold), jakarta(FontWeight.ExtraBold),
+)
+
+private val typography: Typography = Typography().let { t ->
+    fun TextStyle.j() = copy(fontFamily = Jakarta)
+    Typography(
+        displayLarge = t.displayLarge.j(), displayMedium = t.displayMedium.j(), displaySmall = t.displaySmall.j(),
+        headlineLarge = t.headlineLarge.j(), headlineMedium = t.headlineMedium.j(), headlineSmall = t.headlineSmall.j(),
+        titleLarge = t.titleLarge.j(), titleMedium = t.titleMedium.j(), titleSmall = t.titleSmall.j(),
+        bodyLarge = t.bodyLarge.j(), bodyMedium = t.bodyMedium.j(), bodySmall = t.bodySmall.j(),
+        labelLarge = t.labelLarge.j(), labelMedium = t.labelMedium.j(), labelSmall = t.labelSmall.j(),
+    )
+}
+
 @Composable
 fun EposTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = colors, content = content)
+    MaterialTheme(colorScheme = colors, typography = typography, content = content)
 }
 
 /** True on tablets / wide screens: show menu and order side by side. */
