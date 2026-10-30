@@ -8,7 +8,7 @@ A new Android app for waiters. It works the same way as the old ePOS app and tal
 
 ## What's new compared with the old app
 
-| | Old app | ePOS Waiter |
+| | Old app | ePOS T2K |
 |---|---|---|
 | Connecting | Type the IP address | **Finds the ePOS computer on the Wi-Fi by itself**. Typing the address still works |
 | Opening the app | Asked for the address again after problems | Remembers the computer and reconnects. If the address changed, it searches the Wi-Fi again |
