@@ -36,7 +36,7 @@ The order rules are copied from `frmKOT.vb`, so the kitchen and the bills get th
 3. Wait for "Gradle sync" to finish. The first time, it downloads Gradle and the libraries, which takes a few minutes.
    If Android Studio says the Gradle wrapper is missing, accept its offer to create it, or use **File → Sync Project with Gradle Files**.
 4. **Build → Build App Bundle(s) / APK(s) → Build APK(s)**.
-5. Click **locate** in the message that appears. The file is `app/build/outputs/apk/debug/app-debug.apk`.
+5. Click **locate** in the message that appears. The file is `app/build/outputs/apk/debug/ePOS-T2K.apk`.
 
 If the build shows errors, send a screenshot of the **Build** window and they'll be fixed.
 
@@ -44,7 +44,7 @@ For a final version to give to all phones: **Build → Generate Signed App Bundl
 
 ## Install on a phone
 
-1. Copy `app-debug.apk` to the phone (WhatsApp to yourself, USB or Google Drive).
+1. Copy `ePOS-T2K.apk` to the phone (WhatsApp to yourself, USB or Google Drive).
 2. Open it and allow "Install unknown apps" when Android asks.
 3. Open **ePOS T2K**. It searches the Wi-Fi and connects to the ePOS computer.
 

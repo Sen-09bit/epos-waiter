@@ -34,6 +34,13 @@ android {
     }
 }
 
+// Name the installable file ePOS-T2K.apk instead of app-debug.apk / app-release.apk.
+android.applicationVariants.all {
+    outputs.all {
+        (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName = "ePOS-T2K.apk"
+    }
+}
+
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
     implementation(composeBom)
