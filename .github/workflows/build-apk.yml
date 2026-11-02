@@ -34,6 +34,10 @@ jobs:
           if [ -n "$KEYSTORE_B64" ]; then
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
             export EPOS_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+            # Drop any stray characters pasted into the secrets (spaces, hidden or curly characters)
+            export EPOS_KEYSTORE_PASSWORD="$(printf %s "$EPOS_KEYSTORE_PASSWORD" | LC_ALL=C tr -cd "A-Za-z0-9")"
+            export EPOS_KEY_ALIAS="$(printf %s "$EPOS_KEY_ALIAS" | LC_ALL=C tr -cd "A-Za-z0-9._-")"
+            echo "Password length after cleanup: ${#EPOS_KEYSTORE_PASSWORD} (should be 24)"
             gradle assembleRelease --stacktrace
             cp app/build/outputs/apk/release/ePOS-T2K.apk out/
             echo "Signed release APK built."
