@@ -132,6 +132,7 @@ fun ConnectScreen(vm: AppViewModel) {
                 Button(onClick = { vm.connect(address) }, enabled = !vm.busy, modifier = Modifier.fillMaxWidth().height(52.dp)) {
                     Text("Connect")
                 }
+                MadeBy(modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp))
             }
         }
     }
@@ -196,6 +197,7 @@ fun LoginScreen(vm: AppViewModel) {
                     enabled = sel != null && !vm.busy,
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                 ) { Text("Login") }
+                MadeBy(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
         }
     }

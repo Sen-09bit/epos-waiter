@@ -466,5 +466,6 @@ private fun MenuDrawer(vm: AppViewModel, close: () -> Unit) {
         Box(Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 18.dp)) {
             DrawerItem(Icons.AutoMirrored.Filled.ExitToApp, "Logout", color = Color(0xFFB3302A)) { run { vm.logout() } }
         }
+        MadeBy(modifier = Modifier.padding(start = 22.dp, bottom = 16.dp))
     }
 }

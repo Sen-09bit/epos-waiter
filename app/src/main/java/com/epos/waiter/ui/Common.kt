@@ -115,3 +115,10 @@ fun Avatar(image: String?, name: String, size: Dp = 56.dp) {
         }
     }
 }
+
+/** Company credit with the app version, e.g. "ePOS T2K 1.0.42 · by StanSys Inc". */
+@Composable
+fun MadeBy(color: Color = Color(0xFF5B6478), modifier: Modifier = Modifier) {
+    Text("ePOS T2K ${com.epos.waiter.BuildConfig.VERSION_NAME} · by StanSys Inc",
+        color = color, fontSize = 12.sp, modifier = modifier)
+}
