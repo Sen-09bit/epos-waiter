@@ -68,3 +68,19 @@ app/src/main/java/com/epos/waiter/
   ui/OrderScreen.kt      menu, order, KOT / INVOICE and their pop-ups
   ui/MoreScreens.kt      expenses, restaurant profile, change password
 ```
+
+## Signed release APK
+
+GitHub signs every APK with the ePOS T2K release key, so each new version installs over the previous one and the phones keep their settings.
+
+The key is stored in the repository's **Settings → Secrets and variables → Actions** as:
+
+| Secret | Contents |
+|---|---|
+| `EPOS_KEYSTORE_BASE64` | the key file `epos-t2k-release.jks`, Base64-encoded |
+| `EPOS_KEYSTORE_PASSWORD` | the key password |
+| `EPOS_KEY_ALIAS` | `epos-t2k` |
+
+If the secrets are missing, the build falls back to a debug APK and shows a warning.
+
+**Keep a backup of the key file and its password.** Without them, no future version can install over the app already on the phones.

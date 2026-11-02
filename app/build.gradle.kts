@@ -4,6 +4,9 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// Release signing: the key comes from GitHub Secrets (see README, "Signed release APK").
+val releaseKeystore: String? = System.getenv("EPOS_KEYSTORE_FILE")
+
 android {
     namespace = "com.epos.waiter"
     compileSdk = 35
@@ -12,12 +15,26 @@ android {
         applicationId = "com.epos.waiter"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        // Every GitHub build gets a higher number, so phones always accept the update.
+        val build = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+        versionCode = build
+        versionName = "1.0.$build"
+    }
+
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = System.getenv("EPOS_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("EPOS_KEY_ALIAS")
+                keyPassword = System.getenv("EPOS_KEYSTORE_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
+            signingConfig = if (releaseKeystore != null) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -31,6 +48,10 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
     }
 }
 

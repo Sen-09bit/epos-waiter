@@ -22,13 +22,28 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build debug APK
+      - name: Build APK
+        env:
+          KEYSTORE_B64: ${{ secrets.EPOS_KEYSTORE_BASE64 }}
+          EPOS_KEYSTORE_PASSWORD: ${{ secrets.EPOS_KEYSTORE_PASSWORD }}
+          EPOS_KEY_ALIAS: ${{ secrets.EPOS_KEY_ALIAS }}
         # The runner already has the Android SDK installed (ANDROID_HOME).
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
-          gradle assembleDebug --stacktrace
+          mkdir -p out
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            export EPOS_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+            gradle assembleRelease --stacktrace
+            cp app/build/outputs/apk/release/ePOS-T2K.apk out/
+            echo "Signed release APK built."
+          else
+            echo "::warning::Signing secrets are not set - building a debug APK (updates will not install over each other)."
+            gradle assembleDebug --stacktrace
+            cp app/build/outputs/apk/debug/ePOS-T2K.apk out/
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
           name: ePOS-T2K-apk
-          path: app/build/outputs/apk/debug/ePOS-T2K.apk
+          path: out/ePOS-T2K.apk
